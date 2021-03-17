@@ -1,1 +1,55 @@
 
+import numpy as np
+import time
+import matplotlib.pyplot as plt
+
+
+A1 = np.array([[2,5,6,7],[4,11,9,12],[-2,-8,7,3]])
+A2 = np.array([[1,1,1,1,1],[2,4,-3,2,1],[-1,-1,0,-3,2],[1,-1,4,9,-8]])
+A3 = np.array([[1,1,1,1],[2,4,-3,2],[-1,-1,0,-3],[1,-1,4,9]])
+A4 = np.array([[3,2,-1,4],[-3,-4,4,-2],[6,2,2,7],[9,4,2,18]])
+
+
+def  ReductionGauss(A_aug):
+    
+    Aaug = np.copy(A_aug)
+    n, m = np.shape(Aaug)
+    for i in range(0, n-1):
+        for k in range(i+1, n):
+            g = Aaug[k, i] / Aaug[i, i]
+            Aaug[k] = Aaug[k] - g * Aaug[i]
+            
+    return Aaug
+
+T1 = ReductionGauss(A1)
+T2 = ReductionGauss(A2)
+
+def ResolutionSystTriSup(Taug):
+    n, m = np.shape(Taug)
+    L =[0]*n
+    L[n-1] = Taug[n-1,n]/Taug[n-1,n-1]
+    for i in range(n-2, -1, -1):
+        L[i] = Taug[i,n]
+        for k in range(i+1, n):
+            L[i] = L[i] - Taug[i, k] * L[k]
+        L[i] =  L[i]/Taug[i, i]
+    S = np.array([L])
+    S = S.transpose()  
+    return S
+
+A = np.array([[2,5,6],[4,11,9],[-2,-8,7]])
+B = np.array([[7],[12],[3]])
+M1 = np.array([[1,1,1,1],[2,4,-3,2],[-1,-1,0,-3],[1,-1,4,9]])
+
+
+def Gauss(A, B):
+    C = np.concatenate((A, B), axis = 1)
+    T = ReductionGauss(C)
+    S = ResolutionSystTriSup(T)
+    return S
+
+def CreationMatrice(n):
+    A = np.random.rand(n,n)
+    B = np.random.rand(n,1)
+    return (A, B)
+
