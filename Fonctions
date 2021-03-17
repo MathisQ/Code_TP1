@@ -48,8 +48,44 @@ def Gauss(A, B):
     S = ResolutionSystTriSup(T)
     return S
 
-def CreationMatrice(n):
-    A = np.random.rand(n,n)
-    B = np.random.rand(n,1)
-    return (A, B)
 
+
+# décomposition LU
+
+def ResolutionSystTriInf(Laug):
+    n, m = np.shape(Laug)
+    Ly =[0]*n
+    Ly[0] = Laug[0,n]/Laug[0,0]
+    for i in range(1, n):
+        Ly[i] = Laug[i,n]
+        for k in range(0, i):
+            Ly[i] = Ly[i] - Laug[i, k] * Ly[k]
+        Ly[i] =  Ly[i]/Laug[i, i]
+    S = np.array([Ly])
+    S = S.transpose()
+    return S
+            
+def DecompositionLU(A):
+    MA = np.copy(A)
+    l, c = np.shape(MA)
+    L = np.eye(l)
+    
+    for i in range(0, l-1):
+        for k in range(i+1, l):
+            g = MA[k, i] / MA[i, i]
+            MA[k] = MA[k] - g * MA[i]
+            L[k,i] = g
+                                        
+    return(L, MA)
+
+def ResolutionLU(L,U,B):
+    LB = np.concatenate((L,B), axis = 1)
+    y = ResolutionSystTriInf(LB)
+    Uy = np.concatenate((U,y), axis = 1)
+    S = ResolutionSystTriSup(Uy) 
+    return S   
+
+def LU(A, B):
+    L, U = DecompositionLU(A)
+    S = ResolutionLU(L, U, B)
+    return S
