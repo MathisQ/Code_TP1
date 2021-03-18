@@ -89,3 +89,129 @@ def LU(A, B):
     L, U = DecompositionLU(A)
     S = ResolutionLU(L, U, B)
     return S
+    
+# Pivot partiel
+
+def GaussChoixPivotPartiel(A, B):
+    C = np.concatenate((A, B), axis = 1)
+    n, m = np.shape(C)
+    for i in range(0, n-1):
+        #print('i:', i)
+        # Choix du pivot maximal
+        indice_max = i
+        for k in range(i+1, n):
+            #print('k:', k)
+            if abs(C[k,k]) > abs(C[indice_max, i]):
+                indice_max = k
+        # Echange des lignes i et k
+        if indice_max != i:
+            L = np.copy(C[i])
+            C[i] = C[indice_max]
+            C[indice_max] = L
+        # Réduction       
+        for k in range(i+1, n):
+            g = C[k, i] / C[i, i]
+            C[k] = C[k] - g * C[i]
+            #print(C)
+    #Résolution
+    L =[0]*n
+    L[n-1] = C[n-1,n]/C[n-1,n-1]
+    for i in range(n-2, -1, -1):
+        L[i] = C[i,n]
+        for k in range(i+1, n):
+            L[i] = L[i] - C[i, k] * L[k]
+        L[i] =  L[i]/C[i, i]
+
+    S = np.array([L])
+    S = S.transpose()  
+    return S
+
+
+
+
+
+#Graphes
+
+def CreationMatrice(n):
+    A = np.random.rand(n,n)
+    B = np.random.rand(n,1)
+    return (A, B)
+
+def test_temps(min, max, p):
+    Liste_temps_gauss = []
+    Liste_temps_pivot_partiel = []
+    Liste_temps_LU = []
+    Liste_n = []
+    for i in range(min, max, p):
+        A, b = CreationMatrice(i)
+        temps1 = time.time()
+        Gauss(A, b)
+        temps2 = time.time()
+        temps_gauss = temps2 - temps1
+        temps3 = time.time()
+        GaussChoixPivotPartiel(A, b)
+        temps4 = time.time()
+        temps_pivot_partiel = temps4 - temps3
+        temps5 = time.time()
+        LU(A,b)
+        temps6 = time.time()
+        temps_lu = temps6 - temps5
+        Liste_temps_gauss.append(temps_gauss)
+        Liste_temps_pivot_partiel.append(temps_pivot_partiel)
+        Liste_temps_LU.append(temps_lu)
+        Liste_n.append(i)
+    plt.figure()
+    plt.plot(Liste_n, Liste_temps_gauss, label = 'Méthode de Gauss')
+    plt.plot(Liste_n, Liste_temps_pivot_partiel, label = 'Méthode du pivot partiel')
+    plt.plot(Liste_n, Liste_temps_LU, label = 'Méthode de la décomposition LU')
+    plt.title('Temps de calcul pour les différentes méthodes')
+    plt.xlabel('Taille n de la matrice')
+    plt.ylabel('Temps de calcul')
+    plt.legend()
+    plt.show()
+    return (Liste_temps_gauss, Liste_temps_pivot_partiel, Liste_n)
+     
+def test_erreurs(min, max, p):
+
+    Liste_n = []
+    Liste_erreurs_gauss = []
+    Liste_erreurs_pivot_partiel = []
+    Liste_erreurs_LU = []
+    for i in range(min, max, p):
+        A, b = CreationMatrice(i)
+        x = Gauss(A, b)
+        s = GaussChoixPivotPartiel(A, b)
+        s_lu = LU(A,b)
+        Liste_n.append(i)
+        erreur_gauss = np.linalg.norm(np.dot(A, x) - b)
+        erreur_pivot_partiel = np.linalg.norm(np.dot(A, s) - b)
+        erreur_LU = np.linalg.norm(np.dot(A, s_lu) - b)
+        Liste_erreurs_gauss.append(erreur_gauss)
+        Liste_erreurs_pivot_partiel.append(erreur_pivot_partiel)
+        Liste_erreurs_LU.append(erreur_LU)
+    plt.figure()
+    plt.plot(Liste_n, Liste_erreurs_gauss, label = 'Méthode de Gauss')
+    plt.plot(Liste_n, Liste_erreurs_pivot_partiel, label = 'Méthode du pivot partiel')
+    plt.plot(Liste_n, Liste_erreurs_LU, label = 'Méthode de décomposition LU')
+    plt.legend()
+    plt.show()
+    return (Liste_erreurs_gauss, Liste_erreurs_pivot_partiel, Liste_erreurs_LU, Liste_n)
+
+def test_temps_loglog(min, max, p):
+    Liste_temps = []
+    Liste_n = []
+    for i in range(min, max, p):
+        A, b = CreationMatrice(i)
+        temps1 = time.time()
+        Gauss(A, b)
+        temps2 = time.time()
+        temps = temps2 - temps1
+        Liste_temps.append(temps)
+        Liste_n.append(i)
+    plt.figure(figsize = (20, 20))
+    plt.loglog(Liste_n, Liste_temps)
+    plt.show()
+    return (Liste_temps, Liste_n)
+    
+    
+    
